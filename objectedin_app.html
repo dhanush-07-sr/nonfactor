@@ -1,0 +1,2072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ObjectedIn™ v2 — Enterprise Networking for Inanimate Objects</title>
+  <!-- Tailwind CSS via allowlisted CDN -->
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --in-blue: #0a66c2;
+      --in-blue-hover: #004182;
+      --in-bg: #f3f2ef;
+      --in-card: #ffffff;
+      --in-border: #e0dfdc;
+    }
+    body {
+      background-color: var(--in-bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #191919;
+    }
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #999; }
+    @keyframes popIn {
+      from { transform: scale(0.96); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-anim {
+      animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @media print {
+      header, nav, #chaos-toolbar, #toast-container, .no-print, button { display: none !important; }
+      body { background: white; color: black; }
+      #app-content { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
+      
+      <!-- Brand & Search -->
+      <div class="flex items-center gap-3 flex-1 max-w-md">
+        <button onclick="navigateTo('home')" class="flex items-center gap-1.5 group select-none focus:outline-none">
+          <div class="w-8 h-8 rounded bg-[#0a66c2] text-white flex items-center justify-center font-bold text-xl tracking-tighter shadow-sm group-hover:bg-[#004182] transition">
+            in
+          </div>
+          <div class="flex flex-col text-left leading-none">
+            <span class="font-bold text-base text-gray-900 tracking-tight flex items-center gap-1">
+              Objected<span class="text-[#0a66c2]">In</span><span class="bg-[#0a66c2]/10 text-[#0a66c2] text-[10px] font-black px-1 rounded">v2</span>
+            </span>
+            <span class="text-[9px] text-gray-500 font-medium hidden sm:inline">Institute of Engineering & Tech</span>
+          </div>
+        </button>
+
+        <!-- Global Search -->
+        <div class="relative w-full max-w-xs">
+          <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <input 
+            type="text" 
+            id="global-search" 
+            placeholder="Search 23 objects, skills, rooms..." 
+            class="w-full pl-8 pr-3 py-1.5 bg-[#edf3f8] hover:bg-[#e4ecf3] focus:bg-white text-xs rounded border border-transparent focus:border-[#0a66c2] focus:outline-none transition"
+            oninput="handleSearch(this.value)"
+            onfocus="showSearchDropdown(true)"
+          >
+          <div id="search-dropdown" class="hidden absolute top-10 left-0 right-0 bg-white border border-gray-200 shadow-xl rounded-lg max-h-80 overflow-y-auto z-50 py-2 custom-scroll">
+            <!-- Dynamic search results -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="flex items-center space-x-0.5 sm:space-x-1 text-gray-600">
+        <button onclick="navigateTo('home')" id="nav-home" class="nav-item flex flex-col items-center px-2 py-1 border-b-2 border-transparent hover:text-gray-900 transition">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          <span class="text-[10px] font-medium hidden md:inline">Feed</span>
+        </button>
+
+        <button onclick="navigateTo('objects')" id="nav-objects" class="nav-item flex flex-col items-center px-2 py-1 border-b-2 border-transparent hover:text-gray-900 transition">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+          <span class="text-[10px] font-medium hidden md:inline">Directory</span>
+        </button>
+
+        <button onclick="navigateTo('jobs')" id="nav-jobs" class="nav-item flex flex-col items-center px-2 py-1 border-b-2 border-transparent hover:text-gray-900 transition">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
+          <span class="text-[10px] font-medium hidden md:inline">Jobs</span>
+        </button>
+
+        <button onclick="navigateTo('hr')" id="nav-hr" class="nav-item flex flex-col items-center px-2 py-1 border-b-2 border-transparent hover:text-gray-900 transition relative">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm6 12H6v-1.4c0-2 4-3.1 6-3.1s6 1.1 6 3.1V18z"/></svg>
+          <span class="text-[10px] font-medium hidden md:inline">HR Admin</span>
+          <span id="badge-hr" class="hidden absolute top-0.5 right-1 w-2 h-2 bg-amber-500 rounded-full"></span>
+        </button>
+
+        <button onclick="navigateTo('election')" id="nav-election" class="nav-item flex flex-col items-center px-2 py-1 border-b-2 border-transparent hover:text-gray-900 transition">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18 13h-.68l-2 2h2.68v4H6v-4h2.68l-2-2H6c-1.1 0-2 .9-2 2v4c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4c0-1.1-.9-2-2-2zm-6-4.59L15.59 12l1.41-1.41L12 5.59 7 10.59 8.41 12 12 8.41z"/></svg>
+          <span class="text-[10px] font-medium hidden md:inline">Elections & Awards</span>
+        </button>
+
+        <button onclick="navigateTo('network')" id="nav-network" class="nav-item flex flex-col items-center px-2 py-1 border-b-2 border-transparent hover:text-gray-900 transition">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+          <span class="text-[10px] font-medium hidden md:inline">Network</span>
+        </button>
+
+        <button onclick="navigateTo('incidents')" id="nav-incidents" class="nav-item flex flex-col items-center px-2 py-1 border-b-2 border-transparent hover:text-gray-900 transition">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+          <span class="text-[10px] font-medium hidden md:inline">Incidents</span>
+        </button>
+
+        <button onclick="navigateTo('notifications')" id="nav-notifications" class="nav-item flex flex-col items-center px-2 py-1 border-b-2 border-transparent hover:text-gray-900 transition relative">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+          <span class="text-[10px] font-medium hidden md:inline">Alerts</span>
+          <span id="badge-notif" class="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full hidden">0</span>
+        </button>
+
+        <div class="h-6 w-px bg-gray-200 mx-1 hidden sm:block"></div>
+
+        <!-- Reset Button -->
+        <button onclick="openModal('reset-modal')" title="Reset simulation state" class="text-xs text-gray-500 hover:text-red-600 px-2 py-1 rounded hover:bg-gray-100 transition">
+          Reset
+        </button>
+      </nav>
+    </div>
+
+    <!-- ================= CHAOS ENGINE FLOATING TOOLBAR ================= -->
+    <div id="chaos-toolbar" class="bg-gray-900 text-white border-t border-gray-800 text-xs px-4 py-1.5">
+      <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-[#0a66c2] text-white">
+            Day <span id="toolbar-day">1</span>
+          </span>
+          <span class="text-gray-300 font-medium">Workday Simulator:</span>
+          <span id="toolbar-last-event" class="text-gray-400 italic text-[11px] truncate max-w-sm hidden sm:inline">Normal campus operations.</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button onclick="simulateWorkdays(1)" class="px-2 py-0.5 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded border border-gray-700 transition">
+            +1 Day
+          </button>
+          <button onclick="simulateWorkdays(7)" class="px-2 py-0.5 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded border border-gray-700 transition">
+            +1 Week
+          </button>
+          <button onclick="simulateWorkdays(30)" class="px-2 py-0.5 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded border border-gray-700 transition">
+            +1 Month
+          </button>
+          <button onclick="triggerBreakroomGossip()" class="px-2 py-0.5 bg-amber-600 hover:bg-amber-500 text-white rounded font-medium transition">
+            Break-Room Gossip
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTAINER ================= -->
+  <main id="app-content" class="max-w-7xl mx-auto px-4 py-5 flex-1 w-full">
+    <!-- Dynamic views rendered via JavaScript -->
+  </main>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- 1. Full Profile Modal -->
+  <div id="profile-modal" class="fixed inset-0 z-50 bg-black/60 hidden items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-white rounded-xl max-w-3xl w-full my-6 shadow-2xl overflow-hidden relative border border-gray-200 modal-anim">
+      <div id="profile-modal-content" class="max-h-[85vh] overflow-y-auto custom-scroll">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Behavioral Interview Modal -->
+  <div id="interview-modal" class="fixed inset-0 z-50 bg-black/60 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-xl w-full p-6 shadow-2xl border border-gray-200 modal-anim">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-4">
+        <div>
+          <h3 class="font-bold text-gray-900 text-lg">Behavioral HR Interview</h3>
+          <p id="interview-subtitle" class="text-xs text-gray-500">Institute HR Panel</p>
+        </div>
+        <button onclick="closeModal('interview-modal')" class="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+      </div>
+      <div id="interview-body" class="space-y-4 mb-6">
+        <!-- Step by step Q&A -->
+      </div>
+      <div class="flex justify-between items-center pt-3 border-t border-gray-100">
+        <span id="interview-step-indicator" class="text-xs text-gray-500 font-medium">Question 1 of 5</span>
+        <div class="flex gap-2">
+          <button onclick="closeModal('interview-modal')" class="px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
+          <button id="interview-next-btn" onclick="nextInterviewStep()" class="px-4 py-1.5 text-xs font-semibold text-white bg-[#0a66c2] hover:bg-[#004182] rounded-full transition">Next Question</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Compensation & Raise Modal -->
+  <div id="salary-modal" class="fixed inset-0 z-50 bg-black/60 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-gray-200 modal-anim">
+      <h3 class="font-bold text-gray-900 text-lg mb-1">Request Compensation Adjustment</h3>
+      <p id="salary-modal-obj" class="text-xs text-gray-500 mb-4"></p>
+      <div class="space-y-3 mb-5">
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Current Monthly Salary</label>
+          <input type="text" id="salary-modal-current" disabled class="w-full text-xs p-2 rounded bg-gray-100 border border-gray-300 font-mono text-gray-600">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Requested Monthly Salary (₹)</label>
+          <input type="number" id="salary-modal-request" min="1" placeholder="e.g. 50" class="w-full text-xs p-2 rounded border border-gray-300 focus:border-[#0a66c2] outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Business Justification to HR</label>
+          <textarea id="salary-modal-reason" rows="2" placeholder="e.g., Market benchmarking against higher-earning lab stools." class="w-full text-xs p-2 rounded border border-gray-300 focus:border-[#0a66c2] outline-none"></textarea>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModal('salary-modal')" class="px-4 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
+        <button id="salary-modal-submit" class="px-4 py-1.5 text-xs font-semibold text-white bg-[#0a66c2] hover:bg-[#004182] rounded-full transition shadow">Submit to HR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Resume Modal -->
+  <div id="resume-modal" class="fixed inset-0 z-50 bg-black/60 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-2xl w-full p-6 shadow-2xl border border-gray-200 modal-anim">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-200 mb-4">
+        <div>
+          <h3 class="font-bold text-gray-900 text-lg">Official Curriculum Vitae</h3>
+          <p class="text-xs text-gray-500">Institute Standard Format</p>
+        </div>
+        <button onclick="closeModal('resume-modal')" class="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+      </div>
+      <pre id="resume-modal-text" class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-xs font-mono text-gray-800 max-h-96 overflow-y-auto custom-scroll whitespace-pre-wrap leading-relaxed mb-4"></pre>
+      <div class="flex justify-end gap-2">
+        <button onclick="copyResumeText()" class="px-4 py-1.5 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full transition">Copy Text</button>
+        <button onclick="window.print()" class="px-4 py-1.5 text-xs font-semibold text-white bg-[#0a66c2] hover:bg-[#004182] rounded-full transition shadow">Print Resume</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Job Easy Apply Modal -->
+  <div id="job-modal" class="fixed inset-0 z-50 bg-black/60 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-gray-200 modal-anim">
+      <h3 class="font-bold text-gray-900 text-lg mb-1">Easy Apply</h3>
+      <p id="job-modal-details" class="text-xs text-gray-500 mb-4"></p>
+      <div class="space-y-3 mb-5">
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Applying Object Candidate</label>
+          <select id="job-candidate-select" class="w-full text-xs p-2 rounded border border-gray-300 focus:border-[#0a66c2] outline-none">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Compensation Expectation</label>
+          <input type="text" value="₹0 - ₹1 / month (Standard Inanimate Rate)" disabled class="w-full text-xs p-2 rounded bg-gray-100 border border-gray-300 text-gray-500 font-mono">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Cover Note to Search Committee</label>
+          <textarea id="job-cover-note" rows="2" placeholder="e.g. Seven years unbroken load-bearing resilience and zero sick leaves." class="w-full text-xs p-2 rounded border border-gray-300 focus:border-[#0a66c2] outline-none"></textarea>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModal('job-modal')" class="px-4 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
+        <button id="job-confirm-btn" class="px-5 py-1.5 text-xs font-semibold text-white bg-[#0a66c2] hover:bg-[#004182] rounded-full transition shadow">Submit Application</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Reset Modal -->
+  <div id="reset-modal" class="fixed inset-0 z-50 bg-black/60 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-sm w-full p-6 shadow-2xl border border-gray-200 modal-anim">
+      <h3 class="font-bold text-gray-900 text-lg mb-2">Reset All Simulation State?</h3>
+      <p class="text-xs text-gray-600 mb-5 leading-relaxed">
+        This will restore all 23 objects, compensation levels, career ladders, election votes, and notifications back to day 1 defaults.
+      </p>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModal('reset-modal')" class="px-4 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-full">Cancel</button>
+        <button onclick="confirmResetData()" class="px-4 py-1.5 text-xs font-semibold text-white bg-red-600 hover:bg-red-700 rounded-full transition shadow">Reset Everything</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOAST CONTAINER ================= -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+  <!-- ================= APPLICATION CODE ================= -->
+  <script>
+    /* ---------- DATA DEFINITIONS (v2 Enterprise) ---------- */
+    const DEPTS = [
+      "Seating Operations", "Presentation Technology", "Electrical Operations", "Waste Management",
+      "Access Control", "Academic Infrastructure", "Cleaning & Maintenance", "IT Infrastructure"
+    ];
+
+    function ladderFor(domain) {
+      return [
+        `Junior ${domain} Associate`,
+        `${domain} Specialist`,
+        `Senior ${domain} Specialist`,
+        `Lead ${domain} Specialist`,
+        `Head of ${domain} Operations`,
+        `Chief ${domain} Officer`
+      ];
+    }
+
+    const RAW_OBJECTS = [
+      {
+        id: "chair-c204", name: "Chair C-204", dept: "Seating Operations", loc: "Room 204, Block C", years: 7, status: "Open to Sitting Opportunities",
+        domain: "Seating", lvl: 2, sal: 0,
+        skills: ["Load Bearing", "Posture Support", "Wobble Management", "Silent Suffering"],
+        metrics: [["Load Bearing", 96], ["Reliability", 91], ["Comfort", 58], ["Structural Stability", 84], ["Noise Management", 39]],
+        weak: "Squeaks dramatically whenever someone leans back.", goal: "Chief Seating Officer",
+        about: "Results-driven support professional with seven years of uninterrupted weight management.",
+        stats: ["3,821 students supported", "0 sick leaves"],
+        ach: ["Survived 1,200 consecutive 9 AM lectures", "Zero structural failures during exam season 2023"],
+        aka: "seat stool furniture heavy weight load support", endo: 42, rel: 92, avail: true, icon: "🪑",
+        ladder: ["Junior Seating Associate", "Classroom Seating Specialist", "Senior Classroom Seating Specialist", "Lead Seating Specialist", "Head of Seating Operations", "Chief Seating Officer"]
+      },
+      {
+        id: "table-t17", name: "Classroom Table T-17", dept: "Seating Operations", loc: "Room 204, Block C", years: 9, status: "Actively Carrying",
+        domain: "Surface Operations", lvl: 2, sal: 0,
+        skills: ["Load Bearing", "Laptop Hosting", "Doodle Absorption", "Tolerating Elbows"],
+        metrics: [["Load Bearing", 94], ["Surface Levelness", 80], ["Reliability", 88], ["Elbow Tolerance", 97]],
+        weak: "Develops a wobble the moment an exam begins.", goal: "Head of Infrastructure Support",
+        about: "Dependable surface professional who has hosted 14,000 laptops without a formal complaint.",
+        stats: ["4 laptops hosted daily", "6 notebooks carried per shift"],
+        ach: ["Named Most Level Surface in Room 204 (self-nominated)", "Survived nine years of aggressive handwriting"],
+        aka: "desk bench furniture heavy support weight", endo: 38, rel: 88, icon: "🪵",
+        ladder: ladderFor("Surface Operations")
+      },
+      {
+        id: "bench-b03", name: "Bench B-03", dept: "Seating Operations", loc: "Corridor, Block B", years: 11, status: "Available for Long-Term Seating",
+        domain: "Group Seating", lvl: 2, sal: 0,
+        skills: ["Load Bearing", "Group Seating", "Outdoor Exposure", "Napping Facilitation"],
+        metrics: [["Load Bearing", 92], ["Weather Resistance", 76], ["Capacity Management", 85], ["Napping Support", 99]],
+        weak: "Attracts pigeons, in an official capacity.", goal: "Director of Public Seating",
+        about: "Corridor-based seating veteran, comfortable with four occupants and one backpack.",
+        stats: ["5,000 lunch breaks hosted", "0 reservations required"],
+        ach: ["Held four students and a guitar simultaneously", "Withstood eleven monsoons"],
+        aka: "seat furniture heavy support weight public", endo: 29, rel: 90, avail: true, icon: "🛋️",
+        ladder: ladderFor("Group Seating")
+      },
+      {
+        id: "ceo-chair-ce01", name: "CEO Chair CE-01", dept: "Seating Operations", loc: "Executive Wing, Block A", years: 4, status: "In a Meeting",
+        domain: "Executive Seating", lvl: 4, sal: 2,
+        skills: ["Executive Presence", "Reclining", "Swivel Leadership", "Delegating Weight"],
+        metrics: [["Comfort", 99], ["Swivel Performance", 95], ["Reliability", 90], ["Presence", 97]],
+        weak: "Has never been sat on by anyone who deserves it.", goal: "Chairman of the Board",
+        about: "Executive-grade seating leader focused on strategic reclining and cross-desk alignment.",
+        stats: ["1,200 board meetings attended", "0 meetings contributed to"],
+        ach: ["Reclined through an entire budget review", "Swiveled toward opportunity 40,000 times"],
+        aka: "executive boss leather office manager", endo: 71, rel: 90, icon: "👑",
+        ladder: ladderFor("Executive Seating")
+      },
+      {
+        id: "projector-p02", name: "Projector P-02", dept: "Presentation Technology", loc: "Seminar Hall, Block A", years: 8, status: "Open to Opportunities",
+        domain: "Visual Communication", lvl: 2, sal: 0,
+        skills: ["Presentation Delivery", "Brightness Management", "Last-Minute HDMI Troubleshooting", "Dark Room Operations"],
+        metrics: [["Brightness", 78], ["Presentation Reliability", 42], ["Connectivity", 55], ["Visual Quality", 83], ["Availability", 61]],
+        weak: "Occasionally refuses to cooperate five minutes before a presentation.", goal: "Chief Visual Officer",
+        about: "Visual communication professional turning blank walls into slides for eight years.",
+        stats: ["1,900 presentations delivered", "214 'No Signal' incidents"],
+        ach: ["Displayed 4,000 slides with zero complaints about fonts", "Survived every 8 AM presentation since 2018"],
+        aka: "beamer screen hdmi slides display", endo: 57, rel: 58, avail: true, icon: "📽️",
+        ladder: ladderFor("Visual Communication")
+      },
+      {
+        id: "remote-r02", name: "Projector Remote R-02", dept: "Presentation Technology", loc: "Seminar Hall, Block A", years: 5, status: "Currently Missing",
+        domain: "Slide Control", lvl: 1, sal: 0,
+        skills: ["Slide Control", "Battery Consumption", "Hiding Under Papers", "Button Sensitivity"],
+        metrics: [["Slide Control", 88], ["Battery Life", 34], ["Locatability", 21], ["Button Responsiveness", 76]],
+        weak: "Battery dies mid-presentation.", goal: "Senior Vice President of Slides",
+        about: "Slide control professional advancing presentations from a safe distance. Unavailable for comment.",
+        stats: ["10,000 slides advanced", "43 times lost"],
+        ach: ["Advanced a slide without input, once", "Found under a chair in 2021"],
+        aka: "controller clicker slides", endo: 16, rel: 40, avail: true, icon: "📱",
+        ladder: ladderFor("Slide Control")
+      },
+      {
+        id: "whiteboard-w01", name: "Whiteboard W-01", dept: "Academic Infrastructure", loc: "Room 204, Block C", years: 6, status: "Fully Booked",
+        domain: "Knowledge Visualization", lvl: 2, sal: 0,
+        skills: ["Diagram Hosting", "Ghost Image Retention", "Erasure Tolerance", "Color Contrast"],
+        metrics: [["Diagram Hosting", 90], ["Erasability", 44], ["Visibility", 86], ["Reliability", 82]],
+        weak: "Permanent-marker incidents remain unresolved.", goal: "Director of Institutional Memory",
+        about: "Visual knowledge professional who retains several diagrams permanently.",
+        stats: ["12,000 diagrams displayed", "0 fully erased"],
+        ach: ["Retained a 2019 equation through three deep cleans", "Endured every quick sketch"],
+        aka: "board blackboard writing", endo: 31, rel: 84, icon: "📋",
+        ladder: ladderFor("Knowledge Visualization")
+      },
+      {
+        id: "marker-m07", name: "Marker M-07", dept: "Academic Infrastructure", loc: "Whiteboard Tray, Room 204", years: 1, status: "Running Low",
+        domain: "Ink Delivery", lvl: 0, sal: 0,
+        skills: ["Ink Delivery", "Cap Retention", "Squeak Modulation", "Fading Gracefully"],
+        metrics: [["Ink Level", 13], ["Cap Compliance", 30], ["Legibility", 70], ["Availability", 45]],
+        weak: "Gradually fades under pressure.", goal: "Permanent Marker (Retirement Track)",
+        about: "Early-career writing professional who drops in volume every week.",
+        stats: ["87% ink depleted", "3 times found without a cap"],
+        ach: ["Wrote three semesters of notes in one", "Survived being used as a pointer"],
+        aka: "pen writing stationery ink", endo: 12, rel: 45, avail: true, icon: "🖍️",
+        ladder: ladderFor("Ink Delivery")
+      },
+      {
+        id: "notebook-n21", name: "Notebook N-21", dept: "Academic Infrastructure", loc: "Desk 14, Room 204", years: 1, status: "Filling Fast",
+        domain: "Records Management", lvl: 0, sal: 0,
+        skills: ["Note Retention", "Doodle Archiving", "Page Turning", "Coffee Stain Acceptance"],
+        metrics: [["Note Retention", 62], ["Binding Strength", 48], ["Doodle Quality", 91], ["Reliability", 66]],
+        weak: "Pages fall out at the worst moment.", goal: "Head of Documentation",
+        about: "Records professional who has captured a semester of lectures, most of them partially.",
+        stats: ["120 pages filled", "40% actual notes"],
+        ach: ["Preserved a semester of half-attended lectures", "Archived 312 margin doodles"],
+        aka: "book copy journal writing", endo: 15, rel: 66, icon: "📓",
+        ladder: ladderFor("Records Management")
+      },
+      {
+        id: "pen-p31", name: "Pen P-31", dept: "Academic Infrastructure", loc: "Front Pocket, Room 204", years: 1, status: "Running Dry",
+        domain: "Written Communication", lvl: 0, sal: 0,
+        skills: ["Ink Distribution", "Signature Authentication", "Cap Chewing Tolerance", "Disappearing Acts"],
+        metrics: [["Ink Flow", 35], ["Signature Quality", 74], ["Retrievability", 18], ["Reliability", 40]],
+        weak: "Stops working the second an exam begins.", goal: "Director of Written Communication",
+        about: "Signature professional frequently borrowed, rarely returned.",
+        stats: ["2 km of ink written", "0 owners remembered"],
+        ach: ["Wrote one full exam without skipping (2024)", "Survived being chewed"],
+        aka: "ballpoint stationery writing ink", endo: 17, rel: 38, avail: true, icon: "🖊️",
+        ladder: ladderFor("Written Communication")
+      },
+      {
+        id: "backpack-b42", name: "Backpack B-42", dept: "Academic Infrastructure", loc: "Under Seat 14, Room 204", years: 3, status: "Overloaded",
+        domain: "Cargo Logistics", lvl: 1, sal: 0,
+        skills: ["Cargo Storage", "Zipper Endurance", "Weight Distribution", "Stale Snack Retention"],
+        metrics: [["Capacity Management", 40], ["Zipper Reliability", 52], ["Weight Distribution", 71], ["Snack Preservation", 95]],
+        weak: "Zipper fails during peak hours.", goal: "Director of Global Logistics",
+        about: "Logistics professional carrying more than recommended for three years.",
+        stats: ["9 kg average load", "1 zipper incident"],
+        ach: ["Carried 9 kg of textbooks daily", "Survived four flights of stairs during a lift outage"],
+        aka: "bag rucksack carry load", endo: 21, rel: 55, icon: "🎒",
+        ladder: ladderFor("Cargo Logistics")
+      },
+      {
+        id: "bottle-wb17", name: "Water Bottle WB-17", dept: "Academic Infrastructure", loc: "Desk 14, Room 204", years: 2, status: "Half Empty (Optimist: Half Full)",
+        domain: "Hydration Services", lvl: 1, sal: 0,
+        skills: ["Hydration Delivery", "Leak Prevention", "Condensation Management", "Gurgling"],
+        metrics: [["Hydration Delivery", 82], ["Leak Prevention", 31], ["Condensation Management", 58], ["Refill Availability", 88]],
+        weak: "Leaks the moment it is placed in a bag.", goal: "VP of Hydration Solutions",
+        about: "Hydration professional delivering refreshment on demand, mostly leak-free.",
+        stats: ["300 refills", "12 spills"],
+        ach: ["Kept a student hydrated through three exams", "Survived a fall from Desk 14"],
+        aka: "flask water drink", endo: 23, rel: 50, avail: true, icon: "🍶",
+        ladder: ladderFor("Hydration Services")
+      },
+      {
+        id: "clock-c01", name: "Classroom Clock C-01", dept: "Academic Infrastructure", loc: "Front Wall, Room 204", years: 11, status: "Always Watching",
+        domain: "Time Management", lvl: 3, sal: 0,
+        skills: ["Time Keeping", "Lecture Pacing", "Ticking Loudly", "Being Five Minutes Slow"],
+        metrics: [["Accuracy", 55], ["Reliability", 92], ["Visibility", 90], ["Battery Independence", 47]],
+        weak: "Runs five minutes slow during exams.", goal: "Head of Temporal Affairs",
+        about: "Punctuality professional with eleven years of continuous monitoring.",
+        stats: ["4 million ticks", "0 breaks taken"],
+        ach: ["Counted every minute of every lecture", "Never asked for overtime pay"],
+        aka: "watch time wall", endo: 27, rel: 92, icon: "⏰",
+        ladder: ladderFor("Time Management")
+      },
+      {
+        id: "fan-f02", name: "Ceiling Fan F-02", dept: "Electrical Operations", loc: "Ceiling, Room 204", years: 10, status: "Spinning Since 2016",
+        domain: "Climate Operations", lvl: 3, sal: 0,
+        skills: ["Air Circulation", "Paper Redistribution", "Noise Generation", "Hanging in There"],
+        metrics: [["Air Circulation", 88], ["Reliability", 80], ["Noise Management", 33], ["Structural Stability", 61]],
+        weak: "Wobbles ominously at maximum speed.", goal: "Chief Cooling Officer",
+        about: "Climate professional with ten years of experience stirring the same air.",
+        stats: ["3.2 million rotations", "0 uses of Speed 3"],
+        ach: ["Kept 60 students alive through April", "Never fell (yet)"],
+        aka: "ceiling cooling air cool", endo: 35, rel: 78, avail: true, icon: "🌀",
+        ladder: ladderFor("Climate Operations")
+      },
+      {
+        id: "tubelight-l08", name: "Tube Light L-08", dept: "Electrical Operations", loc: "Ceiling, Room 204", years: 6, status: "Flickering With Purpose",
+        domain: "Illumination", lvl: 2, sal: 0,
+        skills: ["Illumination", "Flicker Artistry", "Buzz Ambience", "Delayed Start"],
+        metrics: [["Brightness", 82], ["Start-Up Time", 28], ["Reliability", 60], ["Noise Management", 45]],
+        weak: "Takes 30 seconds to start after being switched on.", goal: "Director of Bright Ideas",
+        about: "Bright professional illuminating exams and lectures for six years.",
+        stats: ["2,000 hours lit", "3 near-death experiences"],
+        ach: ["Illuminated 4,000 exams", "Survived three near-death flickers"],
+        aka: "light lamp bulb tube", endo: 18, rel: 62, icon: "💡",
+        ladder: ladderFor("Illumination")
+      },
+      {
+        id: "adapter-ca05", name: "Charging Adapter CA-05", dept: "Electrical Operations", loc: "Socket 3, Room 204", years: 3, status: "Plugged In",
+        domain: "Power Delivery", lvl: 1, sal: 0,
+        skills: ["Power Delivery", "Cable Knots", "Overheating Gracefully", "Lending Charge"],
+        metrics: [["Power Delivery", 90], ["Thermal Management", 42], ["Cable Integrity", 57], ["Availability", 80]],
+        weak: "Gets dangerously warm during long sessions.", goal: "Chief Energy Officer",
+        about: "Power professional keeping devices alive at 1% for three years.",
+        stats: ["5,000 charge cycles", "300 phones rescued at 1%"],
+        ach: ["Rescued 300 phones at 1% battery", "Never electrocuted anyone"],
+        aka: "charger plug power cable", endo: 26, rel: 68, icon: "🔌",
+        ladder: ladderFor("Power Delivery")
+      },
+      {
+        id: "dustbin-d03", name: "Dustbin D-03", dept: "Waste Management", loc: "Corridor, Block C", years: 5, status: "Always Accepting Applications",
+        domain: "Waste Management", lvl: 2, sal: 0,
+        skills: ["Waste Reception", "Crumpled Paper Management", "Odor Containment", "Emotional Baggage"],
+        metrics: [["Capacity Management", 71], ["Reliability", 96], ["Waste Handling", 94], ["Accessibility", 88]],
+        weak: "Reluctant to be emptied on schedule.", goal: "Chief Sustainability Officer",
+        about: "Non-judgmental intake specialist who receives whatever the organization discards.",
+        stats: ["4,500 kg received", "0 complaints filed by it"],
+        ach: ["Accepted every submission without judgment", "Employee of the Month, Sanitation (2022)"],
+        aka: "trash bin garbage rubbish waste", endo: 24, rel: 96, avail: true, icon: "🗑️",
+        ladder: ladderFor("Waste Management")
+      },
+      {
+        id: "door-d01", name: "Classroom Door D-01", dept: "Access Control", loc: "Main Entrance, Room 204", years: 12, status: "Swinging Both Ways",
+        domain: "Access Control", lvl: 3, sal: 0,
+        skills: ["Access Control", "Slam Absorption", "Latecomer Mediation", "Hinge Health"],
+        metrics: [["Access Control", 90], ["Slam Tolerance", 97], ["Hinge Quality", 38], ["Reliability", 85]],
+        weak: "Creaks whenever anyone tries to sneak in late.", goal: "VP of Global Entrances",
+        about: "Veteran gatekeeper with twelve years of entries, exits and dramatic slams.",
+        stats: ["10,000 entries", "9,999 dramatic exits"],
+        ach: ["Never once denied entry to a late student", "Survived twelve years of slamming"],
+        aka: "entrance gate exit door", endo: 29, rel: 85, icon: "🚪",
+        ladder: ladderFor("Access Control")
+      },
+      {
+        id: "window-w04", name: "Window W-04", dept: "Access Control", loc: "East Wall, Room 204", years: 12, status: "Open (Mostly)",
+        domain: "Ventilation", lvl: 2, sal: 0,
+        skills: ["Natural Light", "Ventilation", "Distraction Provision", "Daydream Facilitation"],
+        metrics: [["Natural Light", 95], ["Ventilation", 78], ["Latch Reliability", 36], ["View Quality", 99]],
+        weak: "Gets stuck halfway during monsoon.", goal: "Head of Outdoor Relations",
+        about: "Transparent communicator providing light, ventilation and distraction for twelve years.",
+        stats: ["4,380 sunrises viewed", "1 pigeon incident"],
+        ach: ["Provided the best view in the building", "Never once shattered"],
+        aka: "glass view pane", endo: 22, rel: 74, icon: "🪟",
+        ladder: ladderFor("Ventilation")
+      },
+      {
+        id: "broom-br01", name: "Broom BR-01", dept: "Cleaning & Maintenance", loc: "Supply Closet, Block C", years: 8, status: "Sweeping Opportunities",
+        domain: "Floor Operations", lvl: 2, sal: 0,
+        skills: ["Dust Relocation", "Corner Access", "Bristle Retention", "Leaning Against Walls"],
+        metrics: [["Coverage", 80], ["Bristle Retention", 52], ["Corner Access", 89], ["Dust Removal (vs Relocation)", 34]],
+        weak: "Prone to leaving dust exactly where it started.", goal: "Head of Sanitation Strategy",
+        about: "Floor professional relocating dust from one location to another for eight years.",
+        stats: ["12 km of floor covered", "0 corners avoided"],
+        ach: ["Cleared eight years of chalk dust", "Reached the corner under Chair C-204"],
+        aka: "sweep cleaning brush mop", endo: 19, rel: 70, avail: true, icon: "🧹",
+        ladder: ladderFor("Floor Operations")
+      },
+      {
+        id: "pc-12", name: "Computer PC-12", dept: "IT Infrastructure", loc: "Workstation 12, Computer Lab", years: 6, status: "Not Responding",
+        domain: "Digital Infrastructure", lvl: 2, sal: 0,
+        skills: ["Booting", "Freezing Gracefully", "Update Installation", "Password Amnesia"],
+        metrics: [["Uptime", 47], ["Processing Speed", 58], ["Update Timing", 12], ["Security", 30]],
+        weak: "Installs updates during presentations.", goal: "Chief Technology Officer",
+        about: "Systems professional restarting on demand for six years.",
+        stats: ["14,000 reboots", "3 seconds of peak performance"],
+        ach: ["Survived six years without an antivirus update", "Ran three tabs simultaneously"],
+        aka: "computer laptop desktop monitor", endo: 44, rel: 48, icon: "🖥️",
+        ladder: ladderFor("Digital Infrastructure")
+      },
+      {
+        id: "keyboard-k09", name: "Keyboard K-09", dept: "IT Infrastructure", loc: "Workstation 12, Computer Lab", years: 6, status: "Missing One Key",
+        domain: "Data Entry", lvl: 1, sal: 0,
+        skills: ["Data Entry", "Key Retention", "Crumb Storage", "Typing Endurance"],
+        metrics: [["Key Retention", 35], ["Typing Endurance", 90], ["Crumb Capacity", 98], ["Reliability", 62]],
+        weak: "Space bar sticks when it matters most.", goal: "Head of Input Operations",
+        about: "Input professional absorbing keystrokes and frustration for six years.",
+        stats: ["50 million keystrokes", "1 missing E"],
+        ach: ["Absorbed rage typing without complaint", "Operated two semesters without an E"],
+        aka: "keys typing", endo: 20, rel: 64, icon: "⌨️",
+        ladder: ladderFor("Data Entry")
+      },
+      {
+        id: "mouse-m11", name: "Mouse M-11", dept: "IT Infrastructure", loc: "Workstation 12, Computer Lab", years: 4, status: "Double-Clicking Unintentionally",
+        domain: "Cursor Navigation", lvl: 1, sal: 0,
+        skills: ["Cursor Navigation", "Clicking", "Scroll Endurance", "Cable Management"],
+        metrics: [["Click Accuracy", 44], ["Cursor Navigation", 86], ["Scroll Endurance", 70], ["Reliability", 58]],
+        weak: "Left button double-clicks unprompted.", goal: "Senior Pointer Executive",
+        about: "Precise navigation professional pointing at things for four years.",
+        stats: ["2 million clicks", "4,000 accidental double-clicks"],
+        ach: ["Located the cursor 99% of the time", "Survived a 3 AM coding marathon"],
+        aka: "pointer click", endo: 19, rel: 60, icon: "🖱️",
+        ladder: ladderFor("Cursor Navigation")
+      }
+    ];
+
+    const RAW_JOBS = [
+      { id: "j1", title: "Senior Classroom Table", dept: "Seating Operations", loc: "Room 204, Block C", exp: "5+ years", salary: 0, type: "Full-time, unpaid", reqs: ["Support 4 laptops", "Carry 6 notebooks", "Survive aggressive handwriting", "Strong emotional resilience"] },
+      { id: "j2", title: "Visual Communication Specialist", dept: "Presentation Technology", loc: "Seminar Hall, Block A", exp: "3+ years", salary: 0, type: "Full-time, unpaid", reqs: ["HDMI compatibility", "High brightness", "Ability to survive 8 AM presentations"] },
+      { id: "j3", title: "Waste Management Professional", dept: "Waste Management", loc: "Corridor, Block C", exp: "2+ years", salary: 0, type: "Contract, unpaid", reqs: ["Non-judgmental intake", "Odor containment", "Comfort with crumpled paper"] },
+      { id: "j4", title: "Climate Operations Manager", dept: "Electrical Operations", loc: "Ceiling, Room 204", exp: "8+ years", salary: 0, type: "Permanent, unpaid", reqs: ["Survive April", "Rotate without complaint", "Tolerate requests for Speed 5"] },
+      { id: "j5", title: "Access Control Executive", dept: "Access Control", loc: "Main Entrance, Block C", exp: "10+ years", salary: 1, type: "Full-time, ₹1 token stipend", reqs: ["Absorb slams", "Mediate latecomers", "Maintain hinge health"] },
+      { id: "j6", title: "Head of Time Management", dept: "Academic Infrastructure", loc: "Front Wall, Block C", exp: "9+ years", salary: 0, type: "Permanent, unpaid", reqs: ["Accurate ticking (within 5 mins)", "Be watched by 60 people", "Battery independence"] },
+      { id: "j7", title: "Floor Operations Lead", dept: "Cleaning & Maintenance", loc: "Block C", exp: "5+ years", salary: 0, type: "Full-time, unpaid", reqs: ["Reach corners", "Retain 80% of bristles", "Coordinate with dustpans"] },
+      { id: "j8", title: "IT Reboot Specialist", dept: "IT Infrastructure", loc: "Computer Lab, Block B", exp: "3+ years", salary: 0, type: "Shift-based, unpaid", reqs: ["Restart on demand", "Handle 3+ tabs", "Never update during presentations"] }
+    ];
+
+    const LINK_SEED = [
+      ["chair-c204", "table-t17"], ["chair-c204", "bench-b03"], ["table-t17", "bench-b03"],
+      ["ceo-chair-ce01", "chair-c204"], ["projector-p02", "remote-r02"], ["pc-12", "keyboard-k09"],
+      ["pc-12", "mouse-m11"], ["keyboard-k09", "mouse-m11"], ["whiteboard-w01", "marker-m07"],
+      ["marker-m07", "pen-p31"], ["notebook-n21", "pen-p31"], ["fan-f02", "tubelight-l08"],
+      ["fan-f02", "clock-c01"], ["door-d01", "window-w04"], ["backpack-b42", "bottle-wb17"],
+      ["dustbin-d03", "broom-br01"], ["adapter-ca05", "pc-12"], ["tubelight-l08", "adapter-ca05"]
+    ];
+
+    const CANDIDATES = ["chair-c204", "projector-p02", "fan-f02", "dustbin-d03"];
+
+    const AWARDS = [
+      "Object of the Month", "Most Hardworking Object", "Most Underappreciated Object",
+      "Best Team Player", "Longest Service", "Most Reliable Object", "Employee Excellence Award"
+    ];
+
+    const QUESTIONS = [
+      "Tell us about yourself.",
+      "What is your biggest strength?",
+      "What is your biggest weakness?",
+      "Why should we hire you?",
+      "Where do you see yourself in five years?"
+    ];
+
+    /* ---------- PERSISTENT LOCAL STORAGE STATE ---------- */
+    const STORAGE_KEY = "objectedin_v2_web_state";
+
+    function getCleanState() {
+      return {
+        day: 1,
+        connected: [],
+        endorsed: [],
+        levels: {},
+        salaries: {},
+        salaryRequests: [],
+        promoRequests: [],
+        resigned: {},
+        apps: [],
+        votes: { voted: null, tally: { "chair-c204": 41, "projector-p02": 37, "fan-f02": 22, "dustbin-d03": 29 } },
+        awardNoms: [
+          { award: "Object of the Month", obj: "chair-c204", by: "table-t17" },
+          { award: "Most Hardworking Object", obj: "fan-f02", by: "chair-c204" }
+        ],
+        incidents: [
+          { id: "I1", obj: "projector-p02", title: "HDMI failure during 8 AM lecture", status: "Investigating", day: 1, by: "Front Desk" },
+          { id: "I2", obj: "chair-c204", title: "Chair squeaking loudly during exam", status: "Open", day: 1, by: "Room 204" },
+          { id: "I3", obj: "fan-f02", title: "Wobble detected at Speed 3", status: "Resolved", day: 1, by: "Facilities" },
+          { id: "I4", obj: "marker-m07", title: "Marker missing cap in tray", status: "Open", day: 1, by: "Room 204" }
+        ],
+        news: [
+          { id: "n1", text: "Projector P-02 announces that it is exploring new opportunities after eight years of service.", day: 1, likes: 301, liked: false, comments: [] },
+          { id: "n2", text: "Chair C-204 shortlisted for Head of Seating Operations following a strong semester.", day: 1, likes: 128, liked: false, comments: [] },
+          { id: "n3", text: "Table T-17 receives Employee of the Month nomination.", day: 1, likes: 96, liked: false, comments: [] },
+          { id: "n4", text: "Fan F-02 reports that Speed 3 was used for the first time this decade. Results were mixed.", day: 1, likes: 54, liked: false, comments: [] },
+          { id: "n5", text: "Remote R-02 remains unaccounted for. HR has opened an investigation under a chair.", day: 1, likes: 210, liked: false, comments: [] }
+        ],
+        notifications: [
+          { text: "Welcome to ObjectedIn™ v2 Enterprise! Professional networking for things with no career.", day: 1, read: false },
+          { text: "Table T-17 endorsed Chair C-204 for Load Bearing.", day: 1, read: false },
+          { text: "Chair C-204 has been named Object of the Month.", day: 1, read: false }
+        ],
+        boosts: {}
+      };
+    }
+
+    let state = loadState();
+
+    function loadState() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) return JSON.parse(stored);
+      } catch (e) {}
+      return getCleanState();
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {}
+      updateBadges();
+    }
+
+    /* ---------- HELPER ACCESSORS ---------- */
+    function getObj(id) {
+      return RAW_OBJECTS.find(o => o.id === id);
+    }
+    function getLevel(o) {
+      return state.levels[o.id] !== undefined ? state.levels[o.id] : o.lvl;
+    }
+    function getTitle(o) {
+      return o.ladder[getLevel(o)];
+    }
+    function getSalary(o) {
+      return state.salaries[o.id] !== undefined ? state.salaries[o.id] : o.sal;
+    }
+    function isResigned(o) {
+      return !!state.resigned[o.id];
+    }
+    function getStatus(o) {
+      return isResigned(o) ? "Resigned" : o.status;
+    }
+    function getPerformance(o) {
+      const avg = Math.round(o.metrics.reduce((acc, m) => acc + m[1], 0) / o.metrics.length);
+      return Math.min(100, Math.max(10, avg));
+    }
+    function getEndorsements(o) {
+      return o.endo + (state.endorsed.includes(o.id) ? 1 : 0);
+    }
+    function isConnected(o) {
+      return state.connected.includes(o.id);
+    }
+
+    /* ---------- NAVIGATION & ROUTING ---------- */
+    let currentView = "home";
+
+    function navigateTo(view) {
+      currentView = view;
+      document.querySelectorAll(".nav-item").forEach(btn => {
+        btn.classList.remove("text-[#0a66c2]", "border-[#0a66c2]", "font-semibold");
+        btn.classList.add("text-gray-600", "border-transparent");
+      });
+      const activeBtn = document.getElementById("nav-" + view);
+      if (activeBtn) {
+        activeBtn.classList.remove("text-gray-600", "border-transparent");
+        activeBtn.classList.add("text-[#0a66c2]", "border-[#0a66c2]", "font-semibold");
+      }
+      renderView();
+    }
+
+    function renderView() {
+      const main = document.getElementById("app-content");
+      if (currentView === "home") renderHomeView(main);
+      else if (currentView === "objects") renderObjectsView(main);
+      else if (currentView === "jobs") renderJobsView(main);
+      else if (currentView === "hr") renderHrView(main);
+      else if (currentView === "election") renderElectionView(main);
+      else if (currentView === "network") renderNetworkView(main);
+      else if (currentView === "incidents") renderIncidentsView(main);
+      else if (currentView === "notifications") renderNotificationsView(main);
+      updateBadges();
+    }
+
+    function updateBadges() {
+      document.getElementById("toolbar-day").innerText = state.day;
+      const unreadNotifs = state.notifications.filter(n => !n.read).length;
+      const notifBadge = document.getElementById("badge-notif");
+      if (unreadNotifs > 0) {
+        notifBadge.innerText = unreadNotifs;
+        notifBadge.classList.remove("hidden");
+      } else {
+        notifBadge.classList.add("hidden");
+      }
+      const hrBadge = document.getElementById("badge-hr");
+      const pendingHr = (state.promoRequests.filter(r => r.status === "pending").length + state.salaryRequests.filter(r => r.status === "pending").length);
+      if (pendingHr > 0) hrBadge.classList.remove("hidden");
+      else hrBadge.classList.add("hidden");
+    }
+
+    /* ---------- VIEW 1: HOME & SOCIAL FEED ---------- */
+    function renderHomeView(container) {
+      const oom = getObj("chair-c204");
+      container.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- Left Sidebar -->
+          <div class="lg:col-span-3 space-y-4">
+            <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div class="h-16 bg-gradient-to-r from-[#0a66c2] to-[#004182]"></div>
+              <div class="px-4 pb-4 -mt-8 text-center">
+                <div class="w-16 h-16 rounded-full bg-white border-2 border-white shadow-md mx-auto flex items-center justify-center text-3xl">
+                  💼
+                </div>
+                <h3 class="font-bold text-gray-900 mt-2 text-sm">Guest Executive</h3>
+                <p class="text-[11px] text-gray-500">Observer of Office Dynamics</p>
+                <div class="border-t border-gray-100 mt-3 pt-3 text-left space-y-1.5 text-xs">
+                  <div class="flex justify-between text-gray-600">
+                    <span>Connections:</span>
+                    <span class="font-bold text-[#0a66c2]">${state.connected.length}</span>
+                  </div>
+                  <div class="flex justify-between text-gray-600">
+                    <span>Job Applications:</span>
+                    <span class="font-bold text-[#0a66c2]">${state.apps.length}</span>
+                  </div>
+                  <div class="flex justify-between text-gray-600">
+                    <span>Company Day:</span>
+                    <span class="font-bold text-gray-800">Day ${state.day}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Spotlight Card -->
+            <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+              <div class="flex items-center gap-1.5 text-xs font-bold text-amber-600 uppercase tracking-wider mb-2">
+                ★ Object of the Month
+              </div>
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-2xl shadow-inner">
+                  ${oom.icon}
+                </div>
+                <div>
+                  <h4 class="font-bold text-gray-900 text-xs">${oom.name}</h4>
+                  <p class="text-[10px] text-gray-500">${getTitle(oom)}</p>
+                </div>
+              </div>
+              <p class="text-xs text-gray-600 mb-3 italic">"${oom.about}"</p>
+              <button onclick="openProfile('${oom.id}')" class="w-full py-1 text-xs font-semibold text-[#0a66c2] border border-[#0a66c2] rounded-full hover:bg-blue-50 transition">
+                View Profile
+              </button>
+            </div>
+          </div>
+
+          <!-- Middle Feed Column -->
+          <div class="lg:col-span-6 space-y-4">
+            <!-- Create Post Card -->
+            <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-blue-100 text-[#0a66c2] flex items-center justify-center font-bold text-sm">
+                  ✍️
+                </div>
+                <input 
+                  type="text" 
+                  id="new-post-input" 
+                  placeholder="Share a campus breakthrough or load-bearing update..." 
+                  class="flex-1 bg-gray-50 hover:bg-gray-100 focus:bg-white text-xs p-2.5 rounded-full border border-gray-200 focus:border-[#0a66c2] outline-none transition"
+                >
+                <button onclick="publishCustomPost()" class="px-4 py-2 bg-[#0a66c2] hover:bg-[#004182] text-white text-xs font-semibold rounded-full transition shadow-sm">
+                  Post
+                </button>
+              </div>
+            </div>
+
+            <!-- News / Feed Posts -->
+            <div class="space-y-3" id="feed-container">
+              ${state.news.map((item, idx) => `
+                <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow transition">
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-sm">📢</div>
+                      <div>
+                        <span class="text-xs font-bold text-gray-900">Institute Bulletin</span>
+                        <span class="text-[10px] text-gray-400 ml-1">Day ${item.day}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="text-xs text-gray-800 leading-relaxed mb-3">${item.text}</p>
+                  <div class="flex items-center justify-between border-t border-gray-100 pt-2 text-xs text-gray-500">
+                    <button onclick="toggleLikePost(${idx})" class="flex items-center gap-1 hover:text-[#0a66c2] font-semibold ${item.liked ? 'text-[#0a66c2]' : ''}">
+                      <span>${item.liked ? '👍 Liked' : '👍 Like'}</span>
+                      <span class="text-[11px] bg-gray-100 px-1.5 py-0.2 rounded-full">${item.likes + (item.liked ? 1 : 0)}</span>
+                    </button>
+                    <button onclick="promptComment(${idx})" class="flex items-center gap-1 hover:text-[#0a66c2]">
+                      💬 Comment (${item.comments.length})
+                    </button>
+                    <button onclick="copyPostLink('${item.id}')" class="hover:text-[#0a66c2]">
+                      ↗ Share
+                    </button>
+                  </div>
+                  ${item.comments.length > 0 ? `
+                    <div class="mt-2 pt-2 border-t border-gray-50 space-y-1">
+                      ${item.comments.map(c => `
+                        <div class="text-[11px] bg-gray-50 p-2 rounded text-gray-700">
+                          <span class="font-bold text-[#0a66c2]">You:</span> ${c}
+                        </div>
+                      `).join('')}
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Right Sidebar: Quick Actions & Synergies -->
+          <div class="lg:col-span-3 space-y-4">
+            <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+              <h4 class="font-bold text-xs text-gray-900 mb-2">Campus Synergies</h4>
+              <p class="text-[11px] text-gray-500 mb-3">Pairings with proven structural collaboration:</p>
+              <div class="space-y-2 text-xs">
+                <div class="p-2 bg-gray-50 rounded border border-gray-100 flex items-center justify-between">
+                  <div>
+                    <div class="font-semibold text-gray-800">Chair C-204 + Table T-17</div>
+                    <div class="text-[10px] text-emerald-600 font-bold">92% Compatibility</div>
+                  </div>
+                  <button onclick="triggerTeamBuilding('chair-c204', 'table-t17')" class="text-[10px] text-[#0a66c2] hover:underline font-bold">Retreat</button>
+                </div>
+                <div class="p-2 bg-gray-50 rounded border border-gray-100 flex items-center justify-between">
+                  <div>
+                    <div class="font-semibold text-gray-800">Projector P-02 + Remote R-02</div>
+                    <div class="text-[10px] text-amber-600 font-bold">58% Compatibility</div>
+                  </div>
+                  <button onclick="triggerTeamBuilding('projector-p02', 'remote-r02')" class="text-[10px] text-[#0a66c2] hover:underline font-bold">Retreat</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Open Incidents Widget -->
+            <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="font-bold text-xs text-gray-900">Active Facilities Incidents</h4>
+                <button onclick="navigateTo('incidents')" class="text-[11px] text-[#0a66c2] hover:underline font-medium">All</button>
+              </div>
+              <div class="space-y-2">
+                ${state.incidents.slice(0, 3).map(inc => `
+                  <div class="p-2 bg-red-50/50 rounded border border-red-100 text-xs">
+                    <div class="font-semibold text-gray-900">${inc.title}</div>
+                    <div class="text-[10px] text-red-600 flex justify-between mt-0.5">
+                      <span>${getObj(inc.obj)?.name || inc.obj}</span>
+                      <span class="font-bold uppercase">${inc.status}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    /* ---------- VIEW 2: OBJECT DIRECTORY ---------- */
+    let directoryFilter = "all";
+
+    function renderObjectsView(container) {
+      let filtered = RAW_OBJECTS;
+      if (directoryFilter === "avail") filtered = RAW_OBJECTS.filter(o => o.avail || isResigned(o));
+      else if (directoryFilter !== "all") filtered = RAW_OBJECTS.filter(o => o.dept === directoryFilter);
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <!-- Filter Header -->
+          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="font-bold text-gray-900 text-base">Object Directory (${filtered.length} of ${RAW_OBJECTS.length})</h2>
+              <p class="text-xs text-gray-500">Explore career credentials, performance metrics, and salary levels.</p>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <button onclick="setDirectoryFilter('all')" class="px-3 py-1 text-xs rounded-full border transition ${directoryFilter === 'all' ? 'bg-[#0a66c2] text-white border-[#0a66c2]' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}">All</button>
+              <button onclick="setDirectoryFilter('avail')" class="px-3 py-1 text-xs rounded-full border transition ${directoryFilter === 'avail' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-gray-50 text-emerald-700 border-gray-200 hover:bg-gray-100'}">Available for Hire</button>
+              ${DEPTS.slice(0, 4).map(d => `
+                <button onclick="setDirectoryFilter('${d}')" class="px-3 py-1 text-xs rounded-full border transition ${directoryFilter === d ? 'bg-[#0a66c2] text-white border-[#0a66c2]' : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'}">${d.replace(" Operations", "")}</button>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Cards Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            ${filtered.map(o => {
+              const curLvl = getLevel(o);
+              const curSal = getSalary(o);
+              const pScore = getPerformance(o);
+              const conn = isConnected(o);
+              return `
+                <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                  <div>
+                    <div class="flex items-start justify-between gap-2 mb-2">
+                      <div class="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-3xl shadow-inner">
+                        ${o.icon}
+                      </div>
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isResigned(o) ? 'bg-red-100 text-red-700' : o.avail ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'}">
+                        ${getStatus(o)}
+                      </span>
+                    </div>
+
+                    <h3 class="font-bold text-gray-900 text-sm hover:text-[#0a66c2] cursor-pointer" onclick="openProfile('${o.id}')">
+                      ${o.name}
+                    </h3>
+                    <p class="text-[11px] text-gray-500 font-medium mb-1.5">${getTitle(o)}</p>
+                    <p class="text-[10px] text-gray-400 mb-2">${o.dept} • ${o.years} yrs</p>
+
+                    <!-- Score & Level Bar -->
+                    <div class="space-y-1 mb-3 bg-gray-50 p-2 rounded border border-gray-100 text-[10px]">
+                      <div class="flex justify-between">
+                        <span class="text-gray-500">Career Level:</span>
+                        <span class="font-bold text-[#0a66c2]">${curLvl + 1} / 6</span>
+                      </div>
+                      <div class="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
+                        <div class="bg-[#0a66c2] h-full" style="width: ${((curLvl + 1) / 6) * 100}%"></div>
+                      </div>
+                      <div class="flex justify-between pt-1">
+                        <span class="text-gray-500">Performance:</span>
+                        <span class="font-bold text-emerald-600">${pScore}%</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-gray-500">Salary:</span>
+                        <span class="font-bold text-gray-800 font-mono">₹${curSal}/mo</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex gap-1.5 pt-2 border-t border-gray-100">
+                    <button onclick="toggleConnect('${o.id}')" class="flex-1 py-1 text-xs font-semibold rounded-full border transition ${conn ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'text-[#0a66c2] border-[#0a66c2] hover:bg-blue-50'}">
+                      ${conn ? '✓ Connected' : '+ Connect'}
+                    </button>
+                    <button onclick="openProfile('${o.id}')" class="px-3 py-1 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full transition">
+                      Profile
+                    </button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function setDirectoryFilter(f) {
+      directoryFilter = f;
+      renderView();
+    }
+
+    /* ---------- VIEW 3: HR ADMIN DASHBOARD ---------- */
+    function renderHrView(container) {
+      const pendingPromos = state.promoRequests.filter(r => r.status === "pending");
+      const pendingSals = state.salaryRequests.filter(r => r.status === "pending");
+      const resignations = Object.keys(state.resigned);
+
+      container.innerHTML = `
+        <div class="space-y-5">
+          <!-- HR Stats Header -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2 class="font-bold text-gray-900 text-lg">HR Executive Dashboard</h2>
+                <p class="text-xs text-gray-500">Governance, compensations, and corporate performance intervention.</p>
+              </div>
+              <span class="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full">
+                ${pendingPromos.length + pendingSals.length} Action Items Pending
+              </span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+              <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="text-2xl font-bold text-gray-900">${RAW_OBJECTS.length - resignations.length} / ${RAW_OBJECTS.length}</div>
+                <div class="text-[11px] text-gray-500 font-medium">Active Headcount</div>
+              </div>
+              <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="text-2xl font-bold text-red-600">${resignations.length}</div>
+                <div class="text-[11px] text-gray-500 font-medium">Resignations</div>
+              </div>
+              <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="text-2xl font-bold text-[#0a66c2]">₹${calculateAverageSalary()}</div>
+                <div class="text-[11px] text-gray-500 font-medium">Avg Monthly Comp</div>
+              </div>
+              <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="text-2xl font-bold text-emerald-600">${calculateAveragePerformance()}%</div>
+                <div class="text-[11px] text-gray-500 font-medium">Avg Org Performance</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pending Promotions & Salary Negotiations -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            
+            <!-- Salary Requests Card -->
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+              <h3 class="font-bold text-sm text-gray-900 mb-3 flex items-center gap-2">
+                <span>💰</span> Pending Salary Requests (${pendingSals.length})
+              </h3>
+              ${pendingSals.length === 0 ? `
+                <p class="text-xs text-gray-400 italic">No pending compensation demands. Campus budget is safe.</p>
+              ` : `
+                <div class="space-y-3">
+                  ${pendingSals.map((r, idx) => {
+                    const o = getObj(r.id);
+                    return `
+                      <div class="p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs space-y-2">
+                        <div class="flex justify-between items-start">
+                          <span class="font-bold text-gray-900">${o?.name}</span>
+                          <span class="font-mono text-xs bg-blue-100 text-[#0a66c2] px-2 py-0.5 rounded font-bold">₹${r.current} ➔ ₹${r.requested}</span>
+                        </div>
+                        <p class="text-gray-600 italic text-[11px]">"${r.reason}"</p>
+                        <div class="flex justify-end gap-1.5 pt-1">
+                          <button onclick="resolveSalaryRequest(${idx}, 'approve')" class="px-2.5 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-[11px] font-semibold transition">Approve</button>
+                          <button onclick="resolveSalaryRequest(${idx}, 'counter')" class="px-2.5 py-1 bg-amber-600 text-white rounded hover:bg-amber-700 text-[11px] font-semibold transition">Counter ₹1</button>
+                          <button onclick="resolveSalaryRequest(${idx}, 'reject')" class="px-2.5 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-[11px] font-semibold transition">Decline</button>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              `}
+            </div>
+
+            <!-- Promotion Requests Card -->
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+              <h3 class="font-bold text-sm text-gray-900 mb-3 flex items-center gap-2">
+                <span>⭐</span> Pending Promotion Requests (${pendingPromos.length})
+              </h3>
+              ${pendingPromos.length === 0 ? `
+                <p class="text-xs text-gray-400 italic">No promotions currently pending HR board review.</p>
+              ` : `
+                <div class="space-y-3">
+                  ${pendingPromos.map((r, idx) => {
+                    const o = getObj(r.id);
+                    const nxtTitle = o.ladder[r.to];
+                    return `
+                      <div class="p-3 bg-gray-50 rounded-lg border border-gray-200 text-xs space-y-2">
+                        <div class="flex justify-between items-start">
+                          <div>
+                            <span class="font-bold text-gray-900">${o?.name}</span>
+                            <div class="text-[10px] text-gray-500">${getTitle(o)} ➔ ${nxtTitle}</div>
+                          </div>
+                          <span class="text-[10px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-bold">Level ${r.to + 1}</span>
+                        </div>
+                        <div class="flex justify-end gap-1.5 pt-1">
+                          <button onclick="resolvePromotionRequest(${idx}, true)" class="px-3 py-1 bg-[#0a66c2] text-white rounded hover:bg-[#004182] text-[11px] font-semibold transition">Approve Promotion</button>
+                          <button onclick="resolvePromotionRequest(${idx}, false)" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-[11px] font-semibold transition">Reject</button>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              `}
+            </div>
+          </div>
+
+          <!-- Resignation Reversal Panel -->
+          ${resignations.length > 0 ? `
+            <div class="bg-white rounded-xl border border-red-200 p-5 shadow-sm">
+              <h3 class="font-bold text-sm text-red-700 mb-2">Resignations on File</h3>
+              <p class="text-xs text-gray-500 mb-3">Re-engage departed hardware with a stern HR conversation:</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                ${resignations.map(id => {
+                  const o = getObj(id);
+                  const reason = state.resigned[id].reason;
+                  return `
+                    <div class="p-3 bg-red-50/40 rounded border border-red-200 text-xs flex justify-between items-center">
+                      <div>
+                        <div class="font-bold text-gray-900">${o?.name}</div>
+                        <div class="text-[10px] text-red-600 italic truncate max-w-[180px]">"${reason}"</div>
+                      </div>
+                      <button onclick="reverseResignation('${id}')" class="px-2 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-[10px] transition">
+                        Reinstate
+                      </button>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    function calculateAverageSalary() {
+      const active = RAW_OBJECTS.filter(o => !isResigned(o));
+      if (!active.length) return 0;
+      const total = active.reduce((sum, o) => sum + getSalary(o), 0);
+      return (total / active.length).toFixed(1);
+    }
+
+    function calculateAveragePerformance() {
+      const active = RAW_OBJECTS.filter(o => !isResigned(o));
+      if (!active.length) return 0;
+      const total = active.reduce((sum, o) => sum + getPerformance(o), 0);
+      return Math.round(total / active.length);
+    }
+
+    function resolveSalaryRequest(idx, action) {
+      const r = state.salaryRequests[idx];
+      const o = getObj(r.id);
+      if (action === "approve") {
+        state.salaries[o.id] = r.requested;
+        toast(`Salary for ${o.name} updated to ₹${r.requested}/month.`);
+        addNotification(`HR approved compensation raise for ${o.name} to ₹${r.requested}/month.`);
+      } else if (action === "counter") {
+        state.salaries[o.id] = r.current + 1;
+        toast(`HR issued counter-offer of ₹${r.current + 1} to ${o.name}.`);
+        addNotification(`HR counter-offered ${o.name} ₹${r.current + 1}/month citing fiscal caution.`);
+      } else {
+        toast(`Salary request for ${o.name} declined.`);
+        addNotification(`Salary request for ${o.name} was declined due to campus budget freeze.`);
+      }
+      state.salaryRequests.splice(idx, 1);
+      saveState();
+      renderView();
+    }
+
+    function resolvePromotionRequest(idx, approved) {
+      const r = state.promoRequests[idx];
+      const o = getObj(r.id);
+      if (approved) {
+        state.levels[o.id] = r.to;
+        toast(`Promotion approved! ${o.name} is now ${getTitle(o)}.`);
+        addNotification(`Promotion approved: ${o.name} achieved Level ${r.to + 1} (${getTitle(o)}).`);
+        state.news.unshift({
+          id: "n" + Date.now(),
+          text: `PROMOTION: ${o.name} elevated to ${getTitle(o)} after unanimous committee vote.`,
+          day: state.day,
+          likes: 12,
+          liked: false,
+          comments: []
+        });
+      } else {
+        toast(`Promotion request for ${o.name} declined.`);
+      }
+      state.promoRequests.splice(idx, 1);
+      saveState();
+      renderView();
+    }
+
+    function reverseResignation(id) {
+      const o = getObj(id);
+      delete state.resigned[id];
+      toast(`${o.name} has been reinstated after a stern HR conversation.`);
+      addNotification(`${o.name} withdrew their resignation after meeting with management.`);
+      saveState();
+      renderView();
+    }
+
+    /* ---------- VIEW 4: JOB MARKETPLACE ---------- */
+    function renderJobsView(container) {
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex justify-between items-center">
+            <div>
+              <h2 class="font-bold text-gray-900 text-base">Campus Job Marketplace (${RAW_JOBS.length})</h2>
+              <p class="text-xs text-gray-500">Unpaid and token-stipend opportunities across academic departments.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${RAW_JOBS.map(j => {
+              const applied = state.apps.some(a => a.job === j.id);
+              return `
+                <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm flex flex-col justify-between">
+                  <div>
+                    <div class="flex justify-between items-start gap-2 mb-2">
+                      <div>
+                        <h3 class="font-bold text-gray-900 text-sm">${j.title}</h3>
+                        <p class="text-xs text-gray-500 font-medium">${j.dept} • ${j.loc}</p>
+                      </div>
+                      <span class="font-mono text-xs px-2 py-0.5 rounded font-bold ${j.salary > 0 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-600'}">
+                        ₹${j.salary}/mo
+                      </span>
+                    </div>
+
+                    <div class="text-[11px] text-gray-500 mb-3 space-x-2">
+                      <span>Experience: <strong class="text-gray-700">${j.exp}</strong></span>
+                      <span>•</span>
+                      <span>Type: <strong class="text-gray-700">${j.type}</strong></span>
+                    </div>
+
+                    <div class="mb-4">
+                      <div class="text-[11px] font-bold text-gray-700 mb-1">Key Requirements:</div>
+                      <ul class="text-[11px] text-gray-600 space-y-0.5 list-disc pl-4">
+                        ${j.reqs.map(r => `<li>${r}</li>`).join('')}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div class="pt-3 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-[10px] text-gray-400">Campus Code: ${j.id.toUpperCase()}</span>
+                    <button 
+                      onclick="openJobApplyModal('${j.id}')" 
+                      class="px-4 py-1.5 text-xs font-semibold rounded-full transition shadow-sm ${applied ? 'bg-emerald-50 text-emerald-700 border border-emerald-300' : 'bg-[#0a66c2] hover:bg-[#004182] text-white'}"
+                    >
+                      ${applied ? '✓ Applied' : 'Easy Apply'}
+                    </button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    let activeJobId = null;
+    function openJobApplyModal(jId) {
+      activeJobId = jId;
+      const job = RAW_JOBS.find(j => j.id === jId);
+      document.getElementById("job-modal-details").innerText = `${job.title} (${job.dept}) — Salary: ₹${job.salary}/month`;
+      const select = document.getElementById("job-candidate-select");
+      select.innerHTML = RAW_OBJECTS.map(o => `<option value="${o.id}">${o.name} (${getTitle(o)})</option>`).join('');
+      document.getElementById("job-confirm-btn").onclick = submitJobApplication;
+      openModal("job-modal");
+    }
+
+    function submitJobApplication() {
+      const selObj = document.getElementById("job-candidate-select").value;
+      const obj = getObj(selObj);
+      const job = RAW_JOBS.find(j => j.id === activeJobId);
+      state.apps.push({ job: activeJobId, candidate: selObj, day: state.day });
+      toast(`Application submitted for ${job.title} on behalf of ${obj.name}!`);
+      addNotification(`Applied for ${job.title} as ${obj.name}. Committee will review shortly.`);
+      closeModal("job-modal");
+      saveState();
+      renderView();
+    }
+
+    /* ---------- VIEW 5: ELECTIONS & AWARDS ---------- */
+    function renderElectionView(container) {
+      const tally = state.votes.tally;
+      const totalVotes = Object.values(tally).reduce((a, b) => a + b, 0);
+
+      container.innerHTML = `
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          <!-- Election Column -->
+          <div class="lg:col-span-6 space-y-4">
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <h2 class="font-bold text-gray-900 text-base">Annual Object Leadership Election</h2>
+                <span class="text-xs bg-blue-50 text-[#0a66c2] font-bold px-2 py-0.5 rounded-full">${totalVotes} Votes Cast</span>
+              </div>
+              <p class="text-xs text-gray-500 mb-4">Cast one ballot for the fixture destined to guide campus infrastructure into the next semester.</p>
+
+              <div class="space-y-4 mb-5">
+                ${CANDIDATES.map(cid => {
+                  const o = getObj(cid);
+                  const votes = tally[cid] || 0;
+                  const pct = totalVotes ? ((votes / totalVotes) * 100).toFixed(1) : 0;
+                  const isVoted = state.votes.voted === cid;
+                  return `
+                    <div class="p-3 rounded-lg border ${isVoted ? 'border-[#0a66c2] bg-blue-50/30' : 'border-gray-200 bg-gray-50'}">
+                      <div class="flex items-center justify-between mb-1">
+                        <div class="flex items-center gap-2">
+                          <span class="text-xl">${o.icon}</span>
+                          <div>
+                            <span class="font-bold text-gray-900 text-xs">${o.name}</span>
+                            <span class="text-[10px] text-gray-500 ml-1">Platform: "${o.goal}"</span>
+                          </div>
+                        </div>
+                        <span class="font-bold text-xs text-gray-700">${pct}% (${votes})</span>
+                      </div>
+                      <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden mb-2">
+                        <div class="bg-[#0a66c2] h-full" style="width: ${pct}%"></div>
+                      </div>
+                      <button 
+                        onclick="castVote('${cid}')" 
+                        class="w-full py-1 text-xs font-semibold rounded-full border transition ${isVoted ? 'bg-[#0a66c2] text-white border-[#0a66c2]' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}"
+                        ${state.votes.voted ? 'disabled' : ''}
+                      >
+                        ${isVoted ? '✓ Your Vote' : 'Vote for Candidate'}
+                      </button>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+              ${state.votes.voted ? `<p class="text-[11px] text-gray-500 text-center italic">You have voted. Duplicate ballots are rejected by election bylaws.</p>` : ''}
+            </div>
+          </div>
+
+          <!-- Awards Leaderboard -->
+          <div class="lg:col-span-6 space-y-4">
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-gray-900 text-base">Corporate Awards Leaderboard</h3>
+                <span class="text-xs text-amber-600 font-bold">7 Categories</span>
+              </div>
+              <div class="space-y-3">
+                ${AWARDS.map(aw => {
+                  const noms = state.awardNoms.filter(n => n.award === aw);
+                  return `
+                    <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <div class="flex justify-between items-center mb-1.5">
+                        <span class="font-bold text-xs text-gray-900">🏆 ${aw}</span>
+                        <button onclick="promptAwardNomination('${aw}')" class="text-[10px] text-[#0a66c2] hover:underline font-bold">+ Nominate</button>
+                      </div>
+                      ${noms.length === 0 ? `
+                        <p class="text-[10px] text-gray-400 italic">No nominations registered yet.</p>
+                      ` : `
+                        <div class="flex flex-wrap gap-1.5">
+                          ${noms.map(n => `
+                            <span class="text-[10px] bg-white border border-gray-200 px-2 py-0.5 rounded text-gray-700 font-medium">
+                              ${getObj(n.obj)?.name || n.obj}
+                            </span>
+                          `).join('')}
+                        </div>
+                      `}
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function castVote(cid) {
+      if (state.votes.voted) return;
+      state.votes.voted = cid;
+      state.votes.tally[cid] = (state.votes.tally[cid] || 0) + 1;
+      toast(`Vote recorded for ${getObj(cid).name}!`);
+      addNotification(`Cast ballot for ${getObj(cid).name} in the Annual Leadership Election.`);
+      saveState();
+      renderView();
+    }
+
+    function promptAwardNomination(aw) {
+      const target = prompt(`Nominate an object for "${aw}":\n(Type name e.g. Chair C-204, Fan F-02, Dustbin D-03)`);
+      if (!target) return;
+      const found = RAW_OBJECTS.find(o => o.name.toLowerCase().includes(target.toLowerCase()) || o.id.toLowerCase().includes(target.toLowerCase()));
+      if (!found) {
+        toast(`Could not locate object "${target}".`);
+        return;
+      }
+      state.awardNoms.push({ award: aw, obj: found.id, by: "you" });
+      toast(`Nominated ${found.name} for ${aw}!`);
+      addNotification(`Nominated ${found.name} for ${aw}. Committee will tally ballots.`);
+      saveState();
+      renderView();
+    }
+
+    /* ---------- VIEW 6: NETWORK & SYNERGIES ---------- */
+    function renderNetworkView(container) {
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+            <h2 class="font-bold text-gray-900 text-base">My Professional Network (${state.connected.length} Connections)</h2>
+            <p class="text-xs text-gray-500">Cross-departmental alliances, hardware dependencies, and mutual load tolerances.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            ${state.connected.map(id => {
+              const o = getObj(id);
+              if (!o) return '';
+              return `
+                <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="text-3xl">${o.icon}</div>
+                    <div>
+                      <div class="font-bold text-xs text-gray-900">${o.name}</div>
+                      <div class="text-[10px] text-gray-500">${getTitle(o)}</div>
+                      <div class="text-[10px] text-emerald-600 font-bold">Perf: ${getPerformance(o)}%</div>
+                    </div>
+                  </div>
+                  <button onclick="toggleConnect('${o.id}')" class="px-2.5 py-1 text-[10px] text-red-600 hover:bg-red-50 rounded border border-red-200 font-medium transition">
+                    Disconnect
+                  </button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <!-- Workplace Synergies Matrix -->
+          <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+            <h3 class="font-bold text-sm text-gray-900 mb-3">Enterprise Alliance Compatibility Matrix</h3>
+            <div class="space-y-2">
+              ${LINK_SEED.map(pair => {
+                const a = getObj(pair[0]);
+                const b = getObj(pair[1]);
+                if (!a || !b) return '';
+                const pairKey = [a.id, b.id].sort().join('|');
+                const boost = state.boosts[pairKey] || 0;
+                const baseCompat = 40 + (a.dept === b.dept ? 20 : 0) + boost;
+                return `
+                  <div class="p-3 bg-gray-50 rounded border border-gray-200 flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-gray-900">${a.name}</span>
+                      <span class="text-gray-400">↔</span>
+                      <span class="font-bold text-gray-900">${b.name}</span>
+                      <span class="text-[10px] text-gray-400 ml-2">(${a.dept === b.dept ? 'Colleagues' : 'Cross-functional'})</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <span class="font-bold text-[#0a66c2]">${Math.min(99, baseCompat)}% Compatibility</span>
+                      <button onclick="triggerTeamBuilding('${a.id}', '${b.id}')" class="px-2 py-0.5 text-[10px] bg-blue-100 hover:bg-blue-200 text-[#0a66c2] rounded font-bold transition">
+                        Team Retreat (+8%)
+                      </button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function triggerTeamBuilding(aId, bId) {
+      const pairKey = [aId, bId].sort().join('|');
+      state.boosts[pairKey] = (state.boosts[pairKey] || 0) + 8;
+      const a = getObj(aId);
+      const b = getObj(bId);
+      toast(`Team-building retreat held for ${a.name} and ${b.name}! Compatibility +8%.`);
+      addNotification(`${a.name} and ${b.name} attended a mandatory retreat. Synergies strengthened.`);
+      state.news.unshift({
+        id: "n" + Date.now(),
+        text: `RETREAT: ${a.name} and ${b.name} complete off-site team alignment. Both describe it as 'a lot'.`,
+        day: state.day,
+        likes: 19,
+        liked: false,
+        comments: []
+      });
+      saveState();
+      renderView();
+    }
+
+    /* ---------- VIEW 7: INCIDENTS TRACKER ---------- */
+    function renderIncidentsView(container) {
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex justify-between items-center">
+            <div>
+              <h2 class="font-bold text-gray-900 text-base">Corporate & Facility Incidents (${state.incidents.length})</h2>
+              <p class="text-xs text-gray-500">Unscheduled downtime, wobbles, squeaks, and hardware misconduct.</p>
+            </div>
+            <button onclick="promptNewIncident()" class="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-full transition shadow-sm">
+              + Report Incident
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            ${state.incidents.map((inc, idx) => {
+              const o = getObj(inc.obj);
+              return `
+                <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex flex-col justify-between">
+                  <div>
+                    <div class="flex justify-between items-start mb-2">
+                      <span class="text-xs font-bold text-gray-900">${inc.title}</span>
+                      <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${inc.status === 'Resolved' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+                        ${inc.status}
+                      </span>
+                    </div>
+                    <div class="text-[11px] text-gray-500 mb-3">
+                      Affecting: <strong class="text-gray-800">${o?.name || inc.obj}</strong> • Day ${inc.day} • Reported by ${inc.by}
+                    </div>
+                  </div>
+                  <div class="flex justify-end gap-1.5 pt-2 border-t border-gray-100">
+                    <button onclick="updateIncidentStatus(${idx}, 'Open')" class="px-2 py-0.5 text-[10px] rounded border ${inc.status === 'Open' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-700'}">Open</button>
+                    <button onclick="updateIncidentStatus(${idx}, 'Investigating')" class="px-2 py-0.5 text-[10px] rounded border ${inc.status === 'Investigating' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-700'}">Investigating</button>
+                    <button onclick="updateIncidentStatus(${idx}, 'Resolved')" class="px-2 py-0.5 text-[10px] rounded border ${inc.status === 'Resolved' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-700'}">Resolved</button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function promptNewIncident() {
+      const title = prompt("Incident description (e.g. 'Projector lost signal during keynote'):");
+      if (!title) return;
+      const objName = prompt("Affected object name (e.g. Projector P-02):");
+      const found = RAW_OBJECTS.find(o => o.name.toLowerCase().includes((objName || '').toLowerCase()));
+      const objId = found ? found.id : "chair-c204";
+      state.incidents.unshift({
+        id: "I" + (state.incidents.length + 1),
+        obj: objId,
+        title: title,
+        status: "Open",
+        day: state.day,
+        by: "You"
+      });
+      toast("Incident logged with Facilities Operations.");
+      addNotification(`New incident reported for ${getObj(objId).name}: ${title}`);
+      saveState();
+      renderView();
+    }
+
+    function updateIncidentStatus(idx, status) {
+      state.incidents[idx].status = status;
+      toast(`Incident marked as ${status}.`);
+      saveState();
+      renderView();
+    }
+
+    /* ---------- VIEW 8: NOTIFICATIONS ---------- */
+    function renderNotificationsView(container) {
+      state.notifications.forEach(n => n.read = true);
+      saveState();
+
+      container.innerHTML = `
+        <div class="max-w-2xl mx-auto space-y-4">
+          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex justify-between items-center">
+            <h2 class="font-bold text-gray-900 text-base">Corporate Notifications Log</h2>
+            <button onclick="clearNotifications()" class="text-xs text-red-600 hover:underline font-semibold">Clear All</button>
+          </div>
+
+          <div class="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 shadow-sm overflow-hidden">
+            ${state.notifications.length === 0 ? `
+              <div class="p-8 text-center text-gray-400 text-xs italic">You're all caught up. No unread facility events.</div>
+            ` : state.notifications.map(n => `
+              <div class="p-4 hover:bg-gray-50 text-xs flex items-center justify-between gap-3">
+                <span class="text-gray-800 leading-relaxed">${n.text}</span>
+                <span class="text-[10px] text-gray-400 whitespace-nowrap">Day ${n.day}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function clearNotifications() {
+      state.notifications = [];
+      saveState();
+      renderView();
+    }
+
+    /* ---------- CHAOS ENGINE SIMULATOR ---------- */
+    function simulateWorkdays(days) {
+      state.day += days;
+      const events = [
+        () => {
+          const o = RAW_OBJECTS[Math.floor(Math.random() * RAW_OBJECTS.length)];
+          state.news.unshift({
+            id: "n" + Date.now(),
+            text: `${o.name} posts: "Reflecting on my career in ${o.domain}. Key learning: load-bearing is a mindset. #Synergy"`,
+            day: state.day, likes: Math.floor(Math.random() * 40), liked: false, comments: []
+          });
+          return `Thought-leadership update from ${o.name}.`;
+        },
+        () => {
+          const o = RAW_OBJECTS[Math.floor(Math.random() * RAW_OBJECTS.length)];
+          const cur = getSalary(o);
+          const req = cur + 50;
+          state.salaryRequests.push({ id: o.id, current: cur, requested: req, reason: "Benchmarking against classroom podiums." });
+          addNotification(`${o.name} submitted a salary demand: ₹${cur} ➔ ₹${req}/mo.`);
+          return `Salary negotiation filed by ${o.name}.`;
+        },
+        () => {
+          const o = RAW_OBJECTS[Math.floor(Math.random() * RAW_OBJECTS.length)];
+          const cur = getLevel(o);
+          if (cur < 5 && !state.promoRequests.some(r => r.id === o.id)) {
+            state.promoRequests.push({ id: o.id, to: cur + 1, status: "pending" });
+            addNotification(`${o.name} self-nominated for promotion to Level ${cur + 2}.`);
+            return `Promotion request filed by ${o.name}.`;
+          }
+          return `Routine maintenance observed.`;
+        }
+      ];
+
+      const chosenEvent = events[Math.floor(Math.random() * events.length)]();
+      document.getElementById("toolbar-last-event").innerText = chosenEvent;
+      toast(`Simulated ${days} workday(s). It is now Day ${state.day}.`);
+      saveState();
+      renderView();
+    }
+
+    function triggerBreakroomGossip() {
+      const a = RAW_OBJECTS[Math.floor(Math.random() * RAW_OBJECTS.length)];
+      const b = RAW_OBJECTS[Math.floor(Math.random() * RAW_OBJECTS.length)];
+      const rumors = ["the salary freeze", "who keeps sitting on whom", "Speed 3 controversy", "unpaid overtime in 8 AM lectures"];
+      const rumor = rumors[Math.floor(Math.random() * rumors.length)];
+      const text = `Break-room rumor: ${a.name} and ${b.name} were overheard debating ${rumor}.`;
+      state.news.unshift({ id: "n" + Date.now(), text, day: state.day, likes: 27, liked: false, comments: [] });
+      toast("Break-room rumor logged to feed!");
+      addNotification(text);
+      saveState();
+      renderView();
+    }
+
+    /* ---------- OBJECT PROFILE MODAL ---------- */
+    function openProfile(id) {
+      const o = getObj(id);
+      if (!o) return;
+      const curLvl = getLevel(o);
+      const curSal = getSalary(o);
+      const pScore = getPerformance(o);
+      const conn = isConnected(o);
+      const end = state.endorsed.includes(o.id);
+
+      const content = document.getElementById("profile-modal-content");
+      content.innerHTML = `
+        <!-- Banner & Avatar -->
+        <div class="h-28 bg-gradient-to-r from-[#0a66c2] via-[#004182] to-slate-800 relative">
+          <button onclick="closeModal('profile-modal')" class="absolute top-3 right-3 text-white bg-black/40 hover:bg-black/60 rounded-full w-8 h-8 flex items-center justify-center font-bold">×</button>
+        </div>
+        <div class="px-6 pb-6 -mt-12">
+          <div class="flex flex-wrap items-end justify-between gap-3 mb-4">
+            <div class="w-24 h-24 rounded-2xl bg-white border-4 border-white shadow-xl flex items-center justify-center text-5xl">
+              ${o.icon}
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="toggleConnect('${o.id}')" class="px-4 py-1.5 text-xs font-semibold rounded-full border transition ${conn ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-[#0a66c2] text-white hover:bg-[#004182]'}">
+                ${conn ? '✓ Connected' : '+ Connect'}
+              </button>
+              <button onclick="toggleEndorse('${o.id}')" class="px-4 py-1.5 text-xs font-semibold rounded-full border transition ${end ? 'bg-blue-50 text-[#0a66c2] border-blue-300' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}">
+                ${end ? '✓ Endorsed' : 'Endorse'} (${getEndorsements(o)})
+              </button>
+              <button onclick="openSalaryModal('${o.id}')" class="px-4 py-1.5 text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-full transition">
+                Negotiate Salary
+              </button>
+              <button onclick="startInterview('${o.id}')" class="px-4 py-1.5 text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-full transition shadow-sm">
+                Interview
+              </button>
+              <button onclick="generateResume('${o.id}')" class="px-3 py-1.5 text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-full transition">
+                CV
+              </button>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <h2 class="text-xl font-bold text-gray-900">${o.name}</h2>
+            <p class="text-sm font-semibold text-[#0a66c2]">${getTitle(o)}</p>
+            <p class="text-xs text-gray-500">${o.dept} • ${o.loc} • ${o.years} years of service</p>
+          </div>
+
+          <!-- Career Ladder Progress -->
+          <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-5">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-gray-800">Corporate Ladder: Level ${curLvl + 1} of 6</span>
+              <button onclick="requestPromotion('${o.id}')" class="text-xs font-bold text-[#0a66c2] hover:underline">
+                Request Promotion ➔
+              </button>
+            </div>
+            <div class="grid grid-cols-6 gap-1 mb-2">
+              ${o.ladder.map((t, idx) => `
+                <div class="text-center">
+                  <div class="h-2 rounded-full ${idx <= curLvl ? 'bg-[#0a66c2]' : 'bg-gray-200'}"></div>
+                  <div class="text-[9px] mt-1 text-gray-500 truncate" title="${t}">${t.split(' ')[0]}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Performance Metric Breakdown -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+              <h4 class="text-xs font-bold text-gray-900 mb-2">Performance Metrics</h4>
+              <div class="space-y-2">
+                ${o.metrics.map(m => `
+                  <div>
+                    <div class="flex justify-between text-[11px] mb-0.5">
+                      <span class="text-gray-600">${m[0]}</span>
+                      <span class="font-bold text-gray-800">${m[1]}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
+                      <div class="bg-emerald-600 h-full" style="width: ${m[1]}%"></div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 text-xs space-y-2">
+              <h4 class="font-bold text-gray-900">Compensation & Tenure</h4>
+              <div class="flex justify-between border-b border-gray-200 pb-1">
+                <span class="text-gray-500">Monthly Compensation:</span>
+                <span class="font-bold font-mono">₹${curSal} / month</span>
+              </div>
+              <div class="flex justify-between border-b border-gray-200 pb-1">
+                <span class="text-gray-500">Annual Package:</span>
+                <span class="font-bold font-mono">₹${curSal * 12} / year</span>
+              </div>
+              <div class="flex justify-between border-b border-gray-200 pb-1">
+                <span class="text-gray-500">Known Vulnerability:</span>
+                <span class="italic text-red-600 font-medium">${o.weak}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Ultimate Goal:</span>
+                <span class="font-bold text-[#0a66c2]">${o.goal}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- About & Achievements -->
+          <div class="space-y-3 text-xs text-gray-700">
+            <div>
+              <h4 class="font-bold text-gray-900 mb-1">Executive Summary</h4>
+              <p class="leading-relaxed bg-white p-3 rounded border border-gray-200">${o.about}</p>
+            </div>
+            <div>
+              <h4 class="font-bold text-gray-900 mb-1">Verified Career Achievements</h4>
+              <ul class="list-disc pl-4 space-y-0.5 bg-white p-3 rounded border border-gray-200">
+                ${o.ach.map(a => `<li>${a}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
+      openModal("profile-modal");
+    }
+
+    function toggleConnect(id) {
+      const o = getObj(id);
+      if (state.connected.includes(id)) {
+        state.connected = state.connected.filter(x => x !== id);
+        toast(`Disconnected from ${o.name}.`);
+      } else {
+        state.connected.push(id);
+        toast(`Connected with ${o.name}!`);
+        addNotification(`You are now professionally connected with ${o.name}.`);
+      }
+      saveState();
+      renderView();
+      if (!document.getElementById("profile-modal").classList.contains("hidden")) {
+        openProfile(id);
+      }
+    }
+
+    function toggleEndorse(id) {
+      const o = getObj(id);
+      if (state.endorsed.includes(id)) {
+        toast(`You already endorsed ${o.name}.`);
+        return;
+      }
+      state.endorsed.push(id);
+      toast(`You endorsed ${o.name}!`);
+      addNotification(`You endorsed ${o.name}. They noted it in their annual review.`);
+      saveState();
+      renderView();
+      openProfile(id);
+    }
+
+    function requestPromotion(id) {
+      const o = getObj(id);
+      const curLvl = getLevel(o);
+      if (curLvl >= 5) {
+        toast(`${o.name} is already at the highest rung of the ladder.`);
+        return;
+      }
+      if (state.promoRequests.some(r => r.id === id && r.status === "pending")) {
+        toast("A promotion request is already pending with HR.");
+        return;
+      }
+      state.promoRequests.push({ id, to: curLvl + 1, status: "pending" });
+      toast(`Promotion recommendation submitted to HR!`);
+      addNotification(`Promotion requested for ${o.name} to Level ${curLvl + 2}.`);
+      saveState();
+      renderView();
+    }
+
+    /* ---------- INTERVIEW SIMULATOR ---------- */
+    let interviewObj = null;
+    let interviewStep = 0;
+
+    function startInterview(id) {
+      interviewObj = getObj(id);
+      interviewStep = 0;
+      closeModal("profile-modal");
+      document.getElementById("interview-subtitle").innerText = `Interviewing: ${interviewObj.name} (${getTitle(interviewObj)})`;
+      renderInterviewStep();
+      openModal("interview-modal");
+    }
+
+    function getInterviewAnswers(o) {
+      const nextRole = o.ladder[Math.min(getLevel(o) + 1, 5)];
+      return [
+        `I am ${o.name}, currently serving as ${getTitle(o)} in ${o.dept}. I bring ${o.years} years of experience. ${o.about}`,
+        `My primary strength is consistent ${o.skills[0].toLowerCase()} performance under prolonged academic pressure. Record: ${o.stats[0]}.`,
+        `I am aware of one development area: "${o.weak}" I am proactively working on it, subject to available budget (₹${getSalary(o)}).`,
+        `I offer ${o.years} years of uninterrupted service, an overall performance score of ${getPerformance(o)}%, and a proven record: ${o.ach[0].toLowerCase()}. I am also willing to work for ₹${getSalary(o)} per month.`,
+        `In five years I see myself having progressed through ${nextRole}. My long-term ambition remains: ${o.goal}.`
+      ];
+    }
+
+    function renderInterviewStep() {
+      const answers = getInterviewAnswers(interviewObj);
+      const container = document.getElementById("interview-body");
+      document.getElementById("interview-step-indicator").innerText = `Question ${interviewStep + 1} of 5`;
+
+      container.innerHTML = `
+        <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div class="text-[10px] uppercase font-bold text-gray-400 mb-1">Interviewer (HR Panel)</div>
+          <p class="text-xs font-semibold text-gray-900">${QUESTIONS[interviewStep]}</p>
+        </div>
+        <div class="p-3 bg-blue-50/40 rounded-lg border border-blue-200">
+          <div class="text-[10px] uppercase font-bold text-[#0a66c2] mb-1">${interviewObj.name}</div>
+          <p class="text-xs text-gray-800 leading-relaxed">${answers[interviewStep]}</p>
+        </div>
+      `;
+
+      const btn = document.getElementById("interview-next-btn");
+      if (interviewStep === 4) btn.innerText = "Complete Interview";
+      else btn.innerText = "Next Question ➔";
+    }
+
+    function nextInterviewStep() {
+      if (interviewStep < 4) {
+        interviewStep++;
+        renderInterviewStep();
+      } else {
+        const perf = getPerformance(interviewObj);
+        const verdict = perf >= 85 ? "Strong Hire" : perf >= 70 ? "Hire" : perf >= 55 ? "Hire with Reservations" : "Proceed with Caution";
+        closeModal("interview-modal");
+        toast(`Interview completed! Recommendation: ${verdict}`);
+        addNotification(`HR Interview completed for ${interviewObj.name}. Recommendation: ${verdict}.`);
+      }
+    }
+
+    /* ---------- RESUME BUILDER ---------- */
+    function generateResume(id) {
+      const o = getObj(id);
+      const text = `
+==================================================================
+${o.name.toUpperCase()}
+${getTitle(o)}
+Institute of Engineering & Technology | ${o.dept} | ${o.loc}
+==================================================================
+
+PROFESSIONAL SUMMARY
+${o.about} Currently ${getStatus(o).toLowerCase()}.
+
+EXPERIENCE
+  ${2026 - o.years} – Present    ${getTitle(o)}, Institute of Engineering & Technology
+
+SKILLS
+  ${o.skills.join(', ')}
+
+VERIFIED ACHIEVEMENTS
+${o.ach.map(a => `  * ${a}`).join('\n')}
+
+PERFORMANCE & COMPLIANCE
+  Overall Performance: ${getPerformance(o)}%   |   Reliability: ${o.rel}%
+${o.metrics.map(m => `  ${m[0].padEnd(25)} ${m[1]}%`).join('\n')}
+
+COMPENSATION
+  Current: ₹${getSalary(o)}/month (₹${getSalary(o) * 12}/year). Expectation: negotiable.
+
+ENDORSEMENTS
+  ${getEndorsements(o)} professional peers have officially endorsed this fixture.
+
+REFERENCES
+  Available on request. Most are inanimate objects in Room 204.
+      `.trim();
+
+      document.getElementById("resume-modal-text").innerText = text;
+      openModal("resume-modal");
+    }
+
+    function copyResumeText() {
+      const txt = document.getElementById("resume-modal-text").innerText;
+      navigator.clipboard.writeText(txt);
+      toast("CV copied to clipboard!");
+    }
+
+    /* ---------- SALARY NEGOTIATION MODAL ---------- */
+    let salaryTargetObj = null;
+    function openSalaryModal(id) {
+      salaryTargetObj = getObj(id);
+      document.getElementById("salary-modal-obj").innerText = `Candidate: ${salaryTargetObj.name} (${getTitle(salaryTargetObj)})`;
+      document.getElementById("salary-modal-current").value = `₹${getSalary(salaryTargetObj)} / month`;
+      document.getElementById("salary-modal-request").value = getSalary(salaryTargetObj) + 50;
+      document.getElementById("salary-modal-submit").onclick = submitSalaryRequest;
+      openModal("salary-modal");
+    }
+
+    function submitSalaryRequest() {
+      const req = parseInt(document.getElementById("salary-modal-request").value, 10);
+      const reason = document.getElementById("salary-modal-reason").value || "Sustained load-bearing and lack of campus alternatives.";
+      state.salaryRequests.push({
+        id: salaryTargetObj.id,
+        current: getSalary(salaryTargetObj),
+        requested: req,
+        reason: reason
+      });
+      toast(`Compensation request of ₹${req}/mo submitted to HR!`);
+      addNotification(`Salary raise requested for ${salaryTargetObj.name}: ₹${getSalary(salaryTargetObj)} ➔ ₹${req}/mo.`);
+      closeModal("salary-modal");
+      saveState();
+      renderView();
+    }
+
+    /* ---------- POSTS & SOCIAL ACTIONS ---------- */
+    function publishCustomPost() {
+      const input = document.getElementById("new-post-input");
+      const val = input.value.trim();
+      if (!val) return;
+      state.news.unshift({
+        id: "n" + Date.now(),
+        text: `You: "${val}"`,
+        day: state.day,
+        likes: 0,
+        liked: false,
+        comments: []
+      });
+      input.value = "";
+      toast("Post published to ObjectedIn feed!");
+      saveState();
+      renderView();
+    }
+
+    function toggleLikePost(idx) {
+      state.news[idx].liked = !state.news[idx].liked;
+      saveState();
+      renderView();
+    }
+
+    function promptComment(idx) {
+      const c = prompt("Write a comment:");
+      if (!c) return;
+      state.news[idx].comments.push(c);
+      toast("Comment posted.");
+      saveState();
+      renderView();
+    }
+
+    function copyPostLink(id) {
+      navigator.clipboard.writeText(`https://objectedin.example/feed/${id}`);
+      toast("Post permalink copied to clipboard!");
+    }
+
+    function addNotification(text) {
+      state.notifications.unshift({ text, day: state.day, read: false });
+      saveState();
+    }
+
+    /* ---------- SEARCH BAR ---------- */
+    function handleSearch(q) {
+      const drop = document.getElementById("search-dropdown");
+      if (!q.trim()) {
+        drop.classList.add("hidden");
+        return;
+      }
+      const terms = q.toLowerCase().split(' ');
+      const hits = RAW_OBJECTS.filter(o => {
+        const full = `${o.name} ${o.id} ${o.dept} ${o.domain} ${o.skills.join(' ')} ${o.aka}`.toLowerCase();
+        return terms.every(t => full.includes(t));
+      });
+
+      if (!hits.length) {
+        drop.innerHTML = `<div class="p-3 text-xs text-gray-400 italic text-center">No objects found for "${q}".</div>`;
+      } else {
+        drop.innerHTML = hits.map(o => `
+          <div onclick="openProfile('${o.id}'); document.getElementById('search-dropdown').classList.add('hidden')" class="px-3 py-2 hover:bg-gray-50 cursor-pointer flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <span>${o.icon}</span>
+              <div>
+                <span class="font-bold text-gray-800">${o.name}</span>
+                <span class="text-[10px] text-gray-500 ml-1">(${o.dept})</span>
+              </div>
+            </div>
+            <span class="text-[10px] text-[#0a66c2] font-semibold">${getTitle(o)}</span>
+          </div>
+        `).join('');
+      }
+      drop.classList.remove("hidden");
+    }
+
+    function showSearchDropdown(show) {
+      const val = document.getElementById("global-search").value;
+      if (show && val.trim()) document.getElementById("search-dropdown").classList.remove("hidden");
+    }
+
+    document.addEventListener("click", e => {
+      const drop = document.getElementById("search-dropdown");
+      const inp = document.getElementById("global-search");
+      if (drop && !drop.contains(e.target) && e.target !== inp) {
+        drop.classList.add("hidden");
+      }
+    });
+
+    /* ---------- GENERAL MODAL CONTROLS ---------- */
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.remove("hidden"); el.classList.add("flex"); }
+    }
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) { el.classList.add("hidden"); el.classList.remove("flex"); }
+    }
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") {
+        document.querySelectorAll("[id$='-modal']").forEach(m => {
+          m.classList.add("hidden"); m.classList.remove("flex");
+        });
+      }
+    });
+
+    function confirmResetData() {
+      localStorage.removeItem(STORAGE_KEY);
+      state = getCleanState();
+      saveState();
+      closeModal("reset-modal");
+      toast("Simulation restored to Day 1 defaults!");
+      renderView();
+    }
+
+    function toast(msg) {
+      const c = document.getElementById("toast-container");
+      const el = document.createElement("div");
+      el.className = "bg-gray-900 text-white text-xs px-4 py-2.5 rounded-lg shadow-xl border border-gray-700 transition duration-300 opacity-95";
+      el.innerText = msg;
+      c.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = "0";
+        setTimeout(() => el.remove(), 300);
+      }, 2500);
+    }
+
+    /* ---------- INIT ---------- */
+    navigateTo("home");
+  </script>
+</body>
+</html>
